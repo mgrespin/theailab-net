@@ -92,10 +92,11 @@ elsewhere, any static file host will serve the repository root as-is.
 
 All course content (syllabus text, schedule, assignments, policies) is
 sourced from the official Fall 2026 syllabus. The page layout, navigation
-pattern, and stylesheet are adapted from a prior Kenyon course site
-([`programminghumanity-org`](https://github.com/jon-chun)) for visual
-consistency across Jon Chun's Kenyon course sites; no course content from
-that site is reused here.
+pattern, and stylesheet are adapted from a prior Kenyon course site (a
+"Twenty Nineteen"-style layout used across Jon Chun's Kenyon course sites)
+for visual consistency; no course content from that site is reused here.
+
+The site is also reachable at **theailab.net**.
 
 ## License
 
