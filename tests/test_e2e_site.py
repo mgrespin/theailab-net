@@ -1,4 +1,5 @@
 """End-to-end tests: site completeness, page counts, and reachability."""
+import re
 import pytest
 from urllib.parse import unquote
 from pathlib import Path
@@ -35,6 +36,16 @@ class TestPageCount:
             f"Expected {EXPECTED_TOTAL_PAGES} HTML files, found {count}. Files: {files}"
         )
 
+    def test_page_inventory_shape(self, site_root, all_html_files):
+        """Shape check: 1 index + 1 404 + 5 core + N week pages, N derived from disk."""
+        names = {f.relative_to(site_root).as_posix() for f in all_html_files}
+        weeks = sorted(n for n in names if n.startswith("weeks/week-"))
+        core = sorted(n for n in names if n.startswith("core/"))
+        assert "index.html" in names and "404.html" in names
+        assert len(core) == 5, f"expected 5 core pages, got {core}"
+        assert len(weeks) == len(EXPECTED_WEEK_FILES), f"week pages: {weeks}"
+        assert len(names) == 2 + len(core) + len(weeks), f"unexpected extra pages: {names}"
+
 
 class TestCoreDirectoryContents:
     def test_core_has_exactly_expected_files(self, site_root):
@@ -56,6 +67,30 @@ class TestWeeksDirectoryContents:
         assert not missing and not extra, (
             f"weeks/ mismatch. Missing: {sorted(missing)}. Extra: {sorted(extra)}"
         )
+
+
+class TestStaticExtras:
+    """favicon, robots.txt, sitemap.xml (T-05, T-07)."""
+
+    ORIGIN = "https://theailab.net"
+
+    def test_favicon_and_robots_exist(self, site_root):
+        assert (site_root / "favicon.svg").exists()
+        assert (site_root / "robots.txt").exists()
+
+    def test_sitemap_lists_every_indexable_page_once(self, site_root):
+        sitemap = (site_root / "sitemap.xml").read_text(encoding="utf-8")
+        locs = re.findall(r"<loc>(.*?)</loc>", sitemap)
+        expected = {f"{self.ORIGIN}/"}
+        for f in (site_root / "core").glob("*.html"):
+            expected.add(f"{self.ORIGIN}/core/{f.name}")
+        for n in range(1, 16):
+            expected.add(f"{self.ORIGIN}/weeks/week-{n:02d}.html")
+        assert len(locs) == len(set(locs)), f"duplicate <loc> entries: {locs}"
+        assert set(locs) == expected, (
+            f"sitemap mismatch. missing={expected - set(locs)} extra={set(locs) - expected}"
+        )
+        assert "404.html" not in sitemap
 
 
 class TestReachability:

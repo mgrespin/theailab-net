@@ -1,0 +1,8 @@
+# Direct test dependencies (human-edited).
+# After changing this file, regenerate the pinned tests/requirements.txt:
+#   uv pip compile tests/requirements.in -o tests/requirements.txt
+# or, without pip-tools:
+#   uv pip install -r tests/requirements.in && uv pip freeze > tests/requirements.txt
+pytest>=9,<10
+beautifulsoup4>=4.13,<5
+lxml>=6,<7

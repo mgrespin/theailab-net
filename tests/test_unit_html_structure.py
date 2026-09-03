@@ -1,10 +1,13 @@
 """Unit tests: every HTML page has valid structure and required elements."""
 from pathlib import Path
 
+from bs4 import BeautifulSoup
+
 SITE_ROOT = Path(__file__).parent.parent
 
 TITLE_SUFFIX = "– IPHS 400: Frontiers in AI"  # en dash
 FOOTER_TEXT = "IPHS 400: Frontiers in AI · Kenyon College"
+ORIGIN = "https://theailab.net"
 
 
 def _rel(path):
@@ -70,16 +73,16 @@ class TestHeaderFooterHero:
         assert not failures, f"Footer issues: {failures[:15]}"
 
     def test_all_pages_have_hero_with_h1(self, parsed_pages):
-        """Every page must have a <section class="hero"> containing an <h1>."""
+        """Every page must have a .hero container with an <h1>."""
         failures = []
         for path, _, soup in parsed_pages:
-            hero = soup.select_one("section.hero")
+            hero = soup.select_one(".hero")
             if not hero:
-                failures.append(f"{_rel(path)}: missing section.hero")
+                failures.append(f"{_rel(path)}: missing .hero")
                 continue
             if not hero.find("h1"):
                 failures.append(f"{_rel(path)}: hero has no h1")
-        assert not failures, f"Hero section issues: {failures[:15]}"
+        assert not failures, f"Hero issues: {failures[:15]}"
 
 
 class TestNoLeftoverBranding:
@@ -107,6 +110,146 @@ class TestNoLeftoverBranding:
             if hits:
                 failures.append(f"{_rel(path)}: {hits}")
         assert not failures, f"Pages with stub/placeholder strings: {failures[:15]}"
+
+
+class TestMetaDescription:
+    def test_every_page_has_one_meta_description(self, parsed_pages):
+        """Every page has exactly one <meta name="description"> of 50-160 chars (T-04)."""
+        failures = []
+        for path, _, soup in parsed_pages:
+            tags = soup.find_all("meta", attrs={"name": "description"})
+            if len(tags) != 1:
+                failures.append(f"{_rel(path)}: {len(tags)} description tags")
+                continue
+            content = (tags[0].get("content") or "").strip()
+            if not (50 <= len(content) <= 160):
+                failures.append(f"{_rel(path)}: description is {len(content)} chars")
+        assert not failures, f"meta description issues: {failures}"
+
+
+class TestFavicon:
+    def test_every_page_links_favicon(self, parsed_pages):
+        failures = [
+            _rel(p) for p, _, s in parsed_pages
+            if not s.find("link", rel="icon", href="/favicon.svg")
+        ]
+        assert not failures, f"Pages not linking /favicon.svg: {failures}"
+
+
+class TestSocialMeta:
+    """Canonical + Open Graph/Twitter tags on every indexable page (T-06)."""
+
+    def test_canonical_and_og_tags(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            rel = _rel(path)
+            is_404 = path.name == "404.html"
+            desc_tag = soup.find("meta", attrs={"name": "description"})
+            desc = desc_tag.get("content") if desc_tag else None
+            og_desc = soup.find("meta", property="og:description")
+            if not og_desc or og_desc.get("content") != desc:
+                failures.append(f"{rel}: og:description missing or != meta description")
+            for prop in ("og:title", "og:type"):
+                if not soup.find("meta", property=prop):
+                    failures.append(f"{rel}: missing {prop}")
+            if not soup.find("meta", attrs={"name": "twitter:card"}):
+                failures.append(f"{rel}: missing twitter:card")
+            canon = soup.find("link", rel="canonical")
+            if is_404:
+                if canon:
+                    failures.append(f"{rel}: 404 should not be canonical")
+                if not soup.find("meta", attrs={"name": "robots", "content": "noindex"}):
+                    failures.append(f"{rel}: 404 missing noindex")
+            else:
+                if not canon or not canon.get("href", "").startswith(ORIGIN):
+                    failures.append(f"{rel}: canonical missing/!=origin")
+                og_url = soup.find("meta", property="og:url")
+                if not og_url or og_url.get("content") != canon.get("href"):
+                    failures.append(f"{rel}: og:url != canonical")
+        assert not failures, "Social meta issues:\n" + "\n".join(failures)
+
+
+class TestAccessibility:
+    """Structural WCAG 2.1 AA gaps from report section B (T-08)."""
+
+    def test_skip_link_first_and_target_exists(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            body = soup.body
+            first = body.find(True) if body else None
+            if not first or first.name != "a" or "skip-link" not in first.get("class", []):
+                failures.append(f"{_rel(path)}: first body child is not .skip-link")
+            elif first.get("href") != "#main" or not soup.find(id="main"):
+                failures.append(f"{_rel(path)}: skip-link target #main missing")
+        assert not failures, f"skip link: {failures}"
+
+    def test_active_nav_has_aria_current(self, nav_pages):
+        failures = []
+        for f in nav_pages:
+            soup = BeautifulSoup(f.read_text(encoding="utf-8"), "lxml")
+            active = soup.select_one("nav.main-nav a.active")
+            if not active or active.get("aria-current") != "page":
+                failures.append(_rel(f))
+        assert not failures, f"active nav link missing aria-current=page: {failures}"
+
+    def test_landmarks_are_named(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            nav = soup.select_one("nav.main-nav")
+            if not nav or not nav.get("aria-label"):
+                failures.append(f"{_rel(path)}: main-nav unnamed")
+            crumb = soup.select_one(".breadcrumbs")
+            if crumb:
+                if crumb.name != "nav" or not crumb.get("aria-label"):
+                    failures.append(f"{_rel(path)}: breadcrumbs not a named nav")
+                elif not crumb.find("ol"):
+                    failures.append(f"{_rel(path)}: breadcrumbs has no <ol>")
+        assert not failures, f"landmark naming: {failures}"
+
+    def test_tables_have_caption_and_scoped_headers(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            for i, table in enumerate(soup.find_all("table")):
+                if not table.find("caption"):
+                    failures.append(f"{_rel(path)} table#{i}: no <caption>")
+                for th in table.find_all("th"):
+                    if not th.get("scope"):
+                        failures.append(f"{_rel(path)} table#{i}: <th> without scope")
+                        break
+        assert not failures, f"table a11y: {failures}"
+
+    def test_hero_is_not_a_section(self, parsed_pages):
+        failures = [_rel(p) for p, _, s in parsed_pages if s.find("section", class_="hero")]
+        assert not failures, f"pages still using <section class=hero>: {failures}"
+
+
+class TestHTMLValidity:
+    """Lint subset that lenient parsing would otherwise let through (T-12)."""
+
+    def test_no_duplicate_ids(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            ids = [el["id"] for el in soup.find_all(id=True)]
+            dupes = {i for i in ids if ids.count(i) > 1}
+            if dupes:
+                failures.append(f"{_rel(path)}: {sorted(dupes)}")
+        assert not failures, f"Duplicate id attributes: {failures}"
+
+    def test_html_lang_present(self, parsed_pages):
+        failures = [
+            _rel(p) for p, _, s in parsed_pages
+            if not (s.html and s.html.get("lang"))
+        ]
+        assert not failures, f"Pages missing <html lang>: {failures}"
+
+    def test_all_images_have_alt(self, parsed_pages):
+        failures = [
+            f"{_rel(p)}: <img src={img.get('src')}>"
+            for p, _, s in parsed_pages
+            for img in s.find_all("img")
+            if img.get("alt") is None
+        ]
+        assert not failures, f"<img> without alt: {failures}"
 
 
 class TestContentNotEmpty:
