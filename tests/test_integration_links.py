@@ -136,6 +136,72 @@ class TestWeekTitleConsistency:
         assert not mismatches, "Week title mismatches:\n" + "\n".join(mismatches)
 
 
+class TestCalendarConsistency:
+    """Internal date cross-checks (T-11). Not a live-calendar check."""
+
+    YEAR = 2026
+    MONTHS = {m: i for i, m in enumerate(
+        ["January", "February", "March", "April", "May", "June", "July",
+         "August", "September", "October", "November", "December"], 1)}
+    # (start, end) inclusive ranges when no class meets, per core/schedule.html
+    NO_CLASS = [((10, 8), (10, 9)), ((11, 21), (11, 29))]
+
+    def _week_dates(self, html):
+        import re
+        from datetime import date
+        m = re.search(r"<p><strong>((?:Tuesday|Thursday)[^<]*)</strong>", html)
+        if not m:
+            return []
+        text = m.group(1).replace("&amp;", "&")
+        days = []
+        last_month = None
+        for token in re.finditer(r"([A-Z][a-z]+ )?(\d{1,2})", text):
+            month_word, day = token.group(1), int(token.group(2))
+            if month_word and month_word.strip() in self.MONTHS:
+                last_month = self.MONTHS[month_word.strip()]
+            if last_month:
+                days.append(date(self.YEAR, last_month, day))
+        return days
+
+    def test_week_session_dates_are_valid_class_days(self, site_root):
+        problems = []
+        for n in range(1, 16):
+            html = (site_root / "weeks" / f"week-{n:02d}.html").read_text(encoding="utf-8")
+            claims_tue = "Tuesday" in html.split("</strong>")[0]
+            claims_thu = "Thursday" in html.split("</strong>")[0]
+            for d in self._week_dates(html):
+                wd = d.strftime("%A")
+                if wd == "Tuesday" and not claims_tue:
+                    problems.append(f"week-{n:02d}: {d} is a Tuesday but page doesn't say Tuesday")
+                if wd == "Thursday" and not claims_thu:
+                    problems.append(f"week-{n:02d}: {d} is a Thursday but page doesn't say Thursday")
+                if wd not in ("Tuesday", "Thursday"):
+                    problems.append(f"week-{n:02d}: {d} falls on {wd}, not a class day")
+                for (sm, sd), (em, ed) in self.NO_CLASS:
+                    if (sm, sd) <= (d.month, d.day) <= (em, ed):
+                        problems.append(f"week-{n:02d}: {d} is inside a no-class break")
+        assert not problems, "Calendar problems:\n" + "\n".join(problems)
+
+    def test_mp_due_dates_match_between_pages(self, site_root):
+        syl = BeautifulSoup((site_root / "core" / "syllabus.html").read_text(encoding="utf-8"), "lxml")
+        asn = (site_root / "core" / "assignments.html").read_text(encoding="utf-8")
+        # syllabus weights table: canonical due dates
+        pairs = {
+            "Mini-Project 1": ("Sep 4", "September 4"),
+            "Mini-Project 2": ("Sep 25", "September 25"),
+            "Mini-Project 3": ("Oct 23", "October 23"),
+            "Mini-Project 4": ("Nov 20", "November 20"),
+        }
+        table_text = syl.get_text()
+        problems = []
+        for mp, (short, long) in pairs.items():
+            if short not in table_text:
+                problems.append(f"syllabus table missing '{short}' for {mp}")
+            if long not in asn:
+                problems.append(f"assignments page missing '{long}' for {mp}")
+        assert not problems, "\n".join(problems)
+
+
 class TestNoDuplicateBlocks:
     """Large content blocks must not be copied verbatim across pages (T-02)."""
 
