@@ -110,6 +110,32 @@ class TestExternalLinks:
         assert not bad, f"target=_blank links missing rel=noopener: {bad}"
 
 
+class TestWeekTitleConsistency:
+    """Each week's title must be identical in schedule link, <title>, <h1>, breadcrumb (T-03)."""
+
+    def test_week_titles_agree_everywhere(self, site_root):
+        schedule = site_root / "core" / "schedule.html"
+        s_soup = BeautifulSoup(schedule.read_text(encoding="utf-8"), "lxml")
+        link_text = {}
+        for a in s_soup.find_all("a", href=True):
+            if "week-" in a["href"]:
+                n = int(a["href"].split("week-")[1].split(".")[0])
+                link_text[n] = a.get_text(strip=True)
+
+        mismatches = []
+        for n in range(1, 16):
+            page = site_root / "weeks" / f"week-{n:02d}.html"
+            soup = BeautifulSoup(page.read_text(encoding="utf-8"), "lxml")
+            title = soup.title.string.split("–")[0].strip()
+            h1 = soup.select_one(".hero h1").get_text(strip=True)
+            crumb = soup.select_one(".breadcrumbs").find_all("span")[-1].get_text(strip=True)
+            want = link_text.get(n)
+            for label, got in (("<title>", title), ("<h1>", h1), ("breadcrumb", crumb)):
+                if got != want:
+                    mismatches.append(f"week-{n:02d} {label}: {got!r} != schedule {want!r}")
+        assert not mismatches, "Week title mismatches:\n" + "\n".join(mismatches)
+
+
 class TestNoDuplicateBlocks:
     """Large content blocks must not be copied verbatim across pages (T-02)."""
 
