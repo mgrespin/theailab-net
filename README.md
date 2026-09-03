@@ -126,7 +126,7 @@ Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
   using the longer week-title wording for more context, and never rewriting any
   policy text because of its importance.
 - **I checked the first implementation tasks.** For each task Claude worked
-  test-first I had Claude write a check for what "done" means, watch it fail, make the
+  test-first: I had Claude write a check for what "done" means, watch it fail, make the
   change, watch the whole suite pass, and then, finally, commit. I went back through
   the first three tasks at that level (the list of external URLs it linked, which page
   each duplicated block moved to, and the week-title wording) and confirmed
