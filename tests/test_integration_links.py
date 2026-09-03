@@ -110,6 +110,29 @@ class TestExternalLinks:
         assert not bad, f"target=_blank links missing rel=noopener: {bad}"
 
 
+class TestNoDuplicateBlocks:
+    """Large content blocks must not be copied verbatim across pages (T-02)."""
+
+    def test_no_identical_large_blocks_across_pages(self, parsed_pages):
+        import re
+
+        seen = {}  # normalized text -> page
+        collisions = []
+        for path, _, soup in parsed_pages:
+            content = soup.select_one(".page-content")
+            if not content:
+                continue
+            for el in content.find_all(["ul", "ol", "table"]):
+                text = re.sub(r"\s+", " ", el.get_text(" ", strip=True))
+                if len(text) < 200:
+                    continue
+                if text in seen and seen[text] != path.name:
+                    collisions.append(f"{seen[text]} <-> {path.name}: {text[:70]}...")
+                else:
+                    seen.setdefault(text, path.name)
+        assert not collisions, f"Verbatim duplicated blocks: {collisions}"
+
+
 class TestScheduleLinksAllWeeks:
     def test_schedule_links_to_all_15_weeks(self, site_root):
         """core/schedule.html must link to weeks/week-01.html through weeks/week-15.html."""

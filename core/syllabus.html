@@ -83,13 +83,7 @@
 <p><strong>Financial Hardship:</strong> Students who cannot afford required subscriptions should contact the instructor privately. Alternative arrangements are available and confidential.</p>
 
 <h3>Secrets Hygiene and Agent Safety (required practice for all projects)</h3>
-<p>This course has you publish configuration repositories and give coding agents real permissions on your own machine, so the following are course rules:</p>
-<ul class="item-list">
-<li><strong>Never commit API keys, tokens, or passwords</strong> to any repository, public or private. Keep secrets in environment variables or in a <code>.env</code> file listed in <code>.gitignore</code>, and turn on GitHub secret scanning / push protection for your account. The first leaked key is a learning moment. After that it is a grading deduction.</li>
-<li><strong>Run agents with least privilege.</strong> Do not run an agent in bypass-permissions ("YOLO") mode on a machine or directory holding data you care about. Use a dedicated project directory, rely on git for recovery, and (in MP3) write hooks that deny destructive commands.</li>
-<li><strong>Keep confidential data out of agent context.</strong> Do not paste other people's private information, unpublished third-party research, or College-internal data into commercial AI services.</li>
-<li>Report any accidental leak to the instructor immediately so we can rotate keys. There is no penalty for prompt disclosure.</li>
-</ul>
+<p>This course has you publish configuration repositories and give coding agents real permissions on your own machine. Never commit API keys, tokens, or passwords; run agents with least privilege; keep confidential data out of agent context; and report any accidental leak immediately. The full rules are on the <a href="policies.html#secrets-hygiene">Policies</a> page and are binding for every project.</p>
 
 <h2>Policy on Changes to the Syllabus</h2>
 <p>Given the pace of change in agentic AI tooling, this syllabus — especially the specific readings, tools, and technical references in the weekly schedule — may be updated during the semester. Core learning objectives, assignment weights, and grading policies will not change without advance notice. Changes will be communicated via:</p>
@@ -100,7 +94,7 @@
 </ul>
 <p><strong>Communication:</strong> Email is the best way to reach the instructor outside office hours; expect a response within one business day (longer on weekends). Questions of general interest may be answered to the whole class.</p>
 
-<h2>Summary of Assignments and Weights</h2>
+<h2 id="assignments-weights">Summary of Assignments and Weights</h2>
 <table>
 <tr><th>Assignment</th><th>Weight</th><th>Due</th></tr>
 <tr><td>Class Participation (incl. attendance and lightning presentation)</td><td>20%</td><td>Ongoing</td></tr>
