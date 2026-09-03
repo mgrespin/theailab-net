@@ -1,4 +1,6 @@
 """Integration tests: internal links resolve, nav is consistent, schedule links all weeks."""
+import re
+
 import pytest
 from bs4 import BeautifulSoup
 from pathlib import Path
@@ -58,6 +60,29 @@ class TestNavConsistency:
             if labels != EXPECTED_NAV_LABELS:
                 failures.append(f"{_rel(f)}: {sorted(labels)}")
         assert not failures, f"Pages with inconsistent nav labels: {failures[:15]}"
+
+    def test_nav_uses_shortest_relative_paths(self, site_root, all_html_files):
+        """No page links to a sibling via a redundant directory hop (T-13)."""
+        bad = []
+        for f in all_html_files:
+            html = f.read_text(encoding="utf-8")
+            nav = re.search(r'<nav class="main-nav".*?</nav>', html, re.S).group(0)
+            if f.parent.name == "core" and "../core/" in nav:
+                bad.append(f"{_rel(f)}: nav uses ../core/ from within core/")
+            if f.parent.name == "" or f.parent == site_root:
+                if "../" in nav:
+                    bad.append(f"{_rel(f)}: root page nav uses ../")
+        assert not bad, bad
+
+    def test_active_link_attribute_order(self, all_html_files):
+        """Active nav link is written href, then class, then aria-current (T-13)."""
+        bad = []
+        for f in all_html_files:
+            html = f.read_text(encoding="utf-8")
+            for m in re.finditer(r'<a\b[^>]*\bclass="active"[^>]*>', html):
+                if not re.match(r'<a href="[^"]+" class="active" aria-current="page">', m.group(0)):
+                    bad.append(f"{_rel(f)}: {m.group(0)}")
+        assert not bad, bad
 
     def test_nav_links_resolve(self, site_root, nav_pages):
         """Nav links on every non-404 page must resolve to existing files."""
