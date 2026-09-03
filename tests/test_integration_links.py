@@ -72,6 +72,44 @@ class TestNavConsistency:
         assert not broken, f"Broken nav links: {broken[:15]}"
 
 
+class TestExternalLinks:
+    """External resources named in the copy must be real <a> links (T-01)."""
+
+    # (page relative to core/, resource substring, expected href)
+    EXPECTED = [
+        ("syllabus.html", "github.com/jon-chun/theailab-net", "https://github.com/jon-chun/theailab-net"),
+        ("syllabus.html", "Moodle", "https://moodle.kenyon.edu"),
+        ("syllabus.html", "digital.kenyon.edu/dh", "https://digital.kenyon.edu/dh"),
+        ("syllabus.html", "OpenRouter", "https://openrouter.ai"),
+        ("syllabus.html", "Anthropic", "https://www.anthropic.com"),
+        ("about.html", "github.com/jon-chun/theailab-net", "https://github.com/jon-chun/theailab-net"),
+        ("about.html", "Moodle", "https://moodle.kenyon.edu"),
+        ("policies.html", "digital.kenyon.edu/dh", "https://digital.kenyon.edu/dh"),
+        ("policies.html", "sass@kenyon.edu", "mailto:sass@kenyon.edu"),
+        ("assignments.html", "Moodle", "https://moodle.kenyon.edu"),
+        ("assignments.html", "digital.kenyon.edu/dh", "https://digital.kenyon.edu/dh"),
+        ("assignments.html", "course repository", "https://github.com/jon-chun/theailab-net"),
+    ]
+
+    def test_known_external_resources_are_linked(self, site_root):
+        missing = []
+        for page, _substr, href in self.EXPECTED:
+            html = (site_root / "core" / page).read_text(encoding="utf-8")
+            soup = BeautifulSoup(html, "lxml")
+            if not soup.find("a", href=href):
+                missing.append(f"{page}: no <a href='{href}'>")
+        assert not missing, f"Unlinked external resources: {missing}"
+
+    def test_external_links_with_blank_target_have_noopener(self, parsed_pages):
+        bad = []
+        for path, _, soup in parsed_pages:
+            for a in soup.find_all("a", target="_blank"):
+                rel = " ".join(a.get("rel", []))
+                if "noopener" not in rel:
+                    bad.append(f"{_rel(path)}: {a.get('href')}")
+        assert not bad, f"target=_blank links missing rel=noopener: {bad}"
+
+
 class TestScheduleLinksAllWeeks:
     def test_schedule_links_to_all_15_weeks(self, site_root):
         """core/schedule.html must link to weeks/week-01.html through weeks/week-15.html."""
