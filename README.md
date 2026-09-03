@@ -98,9 +98,9 @@ for visual consistency; no course content from that site is reused here.
 
 The site is also reachable at **theailab.net**.
 
-## Mini-Project 1 — Revision Notes
+## Mini-Project 1 — Website Revision Notes
 
-*Submitted by [your name], IPHS 400, Fall 2026.*
+*Submitted by Maggie Grespin, IPHS 400, Fall 2026.*
 
 ### Generative AI Use Statement
 
@@ -114,31 +114,29 @@ Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
 
 ### Decisions I made
 
-*(Reword this section in your own words — this is what I'll be asked to
-explain.)*
-
-- **Reused the in-class critique** (`report_web-revision_v1_20260901.md`)
-  instead of regenerating it, then stripped the Netlify/CI config first so the
-  tech-spec wouldn't carry findings about a deploy pipeline we'd removed.
-- **Reviewed and approved the tech-spec** before implementation, including its
-  five judgment calls: leaving a build step / templating system out of scope
-  (it contradicts the site's no-build-step design), assuming `theailab.net` as
-  the canonical URL, the direction of each de-duplication, using the longer
-  week-title wording, and not rewriting any policy text.
-- **Weights table:** chose to group it into *Ongoing / Mini-Projects / Final
-  Project* rather than force one strict date-ordered list, because the two
-  assignment tracks run in parallel (the Final Project proposal is genuinely
-  due before Mini-Project 4).
-- **"What is Mini-Project 1?"** The assignment email calls this exercise
+- **I reused the in-class critique.** (`report_web-revision_v1_20260901.md`)
+  I was the project-led for my group so I reused the one generated during 09/01
+  class time instead of regenerating it. Then, following along with the outline
+  I stripped the Netlify/CI config first so the tech-spec wouldn't carry findings
+  about a deploy pipeline we'd removed.
+- **I reviewed and approved the tech-spec.** I reviewed everyting before Claude
+  implementated the changes, including its five judgment calls: leaving a build step /
+  templating system out of scope (it contradicts the site's no-build-step design), 
+  keeping `theailab.net` as the canonical URL, the direction of each de-duplication,
+  using the longer week-title wording for more context, and never rewriting any
+  policy text because of its .
+- **I reorganized the weights table.** I chose to group it into *Ongoing / Mini-Projects
+  /Final Project* rather than force one strict date-ordered list, because the two
+  assignment tracks run in parallel. It especially bothered me that the Nov. 13 dates
+  showed up after the Mini-Project 4 Nov. 20th due date.
+- **Confusion on "Mini-Project 1."** The assignment email calls this exercise
   Mini-Project 1, but the site says Mini-Project 1 is Development Environment
-  Configuration. I left the site as-is and logged the contradiction in
+  Configuration. I left the site as-is and logged the confusion in
   `docs/open-questions-for-instructor_20260903.md` rather than rewrite the
-  assignment based on one ambiguous sentence.
-- **Home page:** added an Office Hours row to the Course Details table (value
-  taken from the syllabus); did **not** add an email row because no instructor
-  address is published anywhere on the site and I wasn't going to invent one.
-- **Reviewed the rendered site** page by page in Chrome before finalizing, then
-  merged to `main` and pushed to my fork.
+  assignment based on one ambiguous sentence. Overall, I was too unsure on this topic
+  to completely take out the original description
+- **I made minor changes to the Home page.** I added an Office Hours row to the Course        Details table (value taken from the syllabus). I originally wanted to add an email row      but did **not** because this website is public and I did not want to publically leak        Professor Chun's information.
+- **Finally I reviewed the rendered site.** The reviewed the site Claude made page by page    in Chrome before finalizing, then merged to `main` and pushed to my fork.
 
 ### What changed
 
