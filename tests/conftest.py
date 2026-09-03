@@ -1,5 +1,13 @@
 import pytest
 from pathlib import Path
+
+try:
+    import lxml  # noqa: F401
+except ImportError:  # pragma: no cover
+    raise ImportError(
+        "The 'lxml' parser is required. Install the test deps first:\n"
+        "  uv pip install -r tests/requirements.txt"
+    )
 from bs4 import BeautifulSoup
 
 SITE_ROOT = Path(__file__).parent.parent

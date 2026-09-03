@@ -223,6 +223,35 @@ class TestAccessibility:
         assert not failures, f"pages still using <section class=hero>: {failures}"
 
 
+class TestHTMLValidity:
+    """Lint subset that lenient parsing would otherwise let through (T-12)."""
+
+    def test_no_duplicate_ids(self, parsed_pages):
+        failures = []
+        for path, _, soup in parsed_pages:
+            ids = [el["id"] for el in soup.find_all(id=True)]
+            dupes = {i for i in ids if ids.count(i) > 1}
+            if dupes:
+                failures.append(f"{_rel(path)}: {sorted(dupes)}")
+        assert not failures, f"Duplicate id attributes: {failures}"
+
+    def test_html_lang_present(self, parsed_pages):
+        failures = [
+            _rel(p) for p, _, s in parsed_pages
+            if not (s.html and s.html.get("lang"))
+        ]
+        assert not failures, f"Pages missing <html lang>: {failures}"
+
+    def test_all_images_have_alt(self, parsed_pages):
+        failures = [
+            f"{_rel(p)}: <img src={img.get('src')}>"
+            for p, _, s in parsed_pages
+            for img in s.find_all("img")
+            if img.get("alt") is None
+        ]
+        assert not failures, f"<img> without alt: {failures}"
+
+
 class TestContentNotEmpty:
     def test_page_content_has_minimum_text(self, parsed_pages):
         """Every page's .page-content div must have at least 20 characters of stripped text."""

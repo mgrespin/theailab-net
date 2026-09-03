@@ -36,6 +36,16 @@ class TestPageCount:
             f"Expected {EXPECTED_TOTAL_PAGES} HTML files, found {count}. Files: {files}"
         )
 
+    def test_page_inventory_shape(self, site_root, all_html_files):
+        """Shape check: 1 index + 1 404 + 5 core + N week pages, N derived from disk."""
+        names = {f.relative_to(site_root).as_posix() for f in all_html_files}
+        weeks = sorted(n for n in names if n.startswith("weeks/week-"))
+        core = sorted(n for n in names if n.startswith("core/"))
+        assert "index.html" in names and "404.html" in names
+        assert len(core) == 5, f"expected 5 core pages, got {core}"
+        assert len(weeks) == len(EXPECTED_WEEK_FILES), f"week pages: {weeks}"
+        assert len(names) == 2 + len(core) + len(weeks), f"unexpected extra pages: {names}"
+
 
 class TestCoreDirectoryContents:
     def test_core_has_exactly_expected_files(self, site_root):
