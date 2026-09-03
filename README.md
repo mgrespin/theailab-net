@@ -125,6 +125,13 @@ Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
   assuming `theailab.net` as the canonical URL, the direction of each de-duplication,
   using the longer week-title wording for more context, and never rewriting any
   policy text because of its importance.
+- **I checked the first implementation tasks.** For each task Claude worked
+  test-first: write a check for what "done" means, watch it fail, make the
+  change, watch the whole suite pass, commit. I went back through the first
+  three tasks at that level — the list of external URLs it linked, which page
+  each duplicated block moved to, and the week-title wording — and confirmed
+  every commit was scoped to one task with the test count only going up, so
+  nothing was quietly weakened or over-edited.
 - **I reorganized the weights table.** I chose to group it into *Ongoing / Mini-Projects
   / Final Project* rather than force one strict date-ordered list, because the two
   assignment tracks run in parallel. It especially bothered me that the Nov. 13 dates
