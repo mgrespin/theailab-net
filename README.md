@@ -114,7 +114,7 @@ Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
 
 ### Decisions I made
 
-- **I reused the in-class critique.** (`report_web-revision_v1_20260901.md`)
+- **I reused the in-class critique.** (`report_web-revision_v1_20260901.md`).
   I was the project-led for my group so I reused the one generated during 09/01
   class time instead of regenerating it. Then, following along with the outline
   I stripped the Netlify/CI config first so the tech-spec wouldn't carry findings
