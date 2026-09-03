@@ -1,4 +1,5 @@
 """End-to-end tests: site completeness, page counts, and reachability."""
+import re
 import pytest
 from urllib.parse import unquote
 from pathlib import Path
@@ -56,6 +57,30 @@ class TestWeeksDirectoryContents:
         assert not missing and not extra, (
             f"weeks/ mismatch. Missing: {sorted(missing)}. Extra: {sorted(extra)}"
         )
+
+
+class TestStaticExtras:
+    """favicon, robots.txt, sitemap.xml (T-05, T-07)."""
+
+    ORIGIN = "https://theailab.net"
+
+    def test_favicon_and_robots_exist(self, site_root):
+        assert (site_root / "favicon.svg").exists()
+        assert (site_root / "robots.txt").exists()
+
+    def test_sitemap_lists_every_indexable_page_once(self, site_root):
+        sitemap = (site_root / "sitemap.xml").read_text(encoding="utf-8")
+        locs = re.findall(r"<loc>(.*?)</loc>", sitemap)
+        expected = {f"{self.ORIGIN}/"}
+        for f in (site_root / "core").glob("*.html"):
+            expected.add(f"{self.ORIGIN}/core/{f.name}")
+        for n in range(1, 16):
+            expected.add(f"{self.ORIGIN}/weeks/week-{n:02d}.html")
+        assert len(locs) == len(set(locs)), f"duplicate <loc> entries: {locs}"
+        assert set(locs) == expected, (
+            f"sitemap mismatch. missing={expected - set(locs)} extra={set(locs) - expected}"
+        )
+        assert "404.html" not in sitemap
 
 
 class TestReachability:
