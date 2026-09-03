@@ -126,7 +126,7 @@ Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
   using the longer week-title wording for more context, and never rewriting any
   policy text because of its importance.
 - **I reorganized the weights table.** I chose to group it into *Ongoing / Mini-Projects
-  /Final Project* rather than force one strict date-ordered list, because the two
+  / Final Project* rather than force one strict date-ordered list, because the two
   assignment tracks run in parallel. It especially bothered me that the Nov. 13 dates
   showed up after the Mini-Project 4 Nov. 20th due date.
 - **Confusion on "Mini-Project 1."** The assignment email calls this exercise
