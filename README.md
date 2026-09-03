@@ -98,6 +98,52 @@ for visual consistency; no course content from that site is reused here.
 
 The site is also reachable at **theailab.net**.
 
+## Mini-Project 1 — Revision Notes
+
+*Submitted by [your name], IPHS 400, Fall 2026.*
+
+### Generative AI Use Statement
+
+I used **Claude Code (Sonnet 5, thinking effort medium)** for this project.
+The agent did the critique, wrote the tech-spec, made every code and content
+edit, wrote the tests, and drafted the supporting docs. I directed the work
+and made the judgment calls described below. No other AI tools were used.
+Artifacts of the AI work: `docs/report_web-revision_v1_20260901.md` (critique),
+`docs/tech-spec_website-revision_v1_20260903.md` (plan), `CHANGELOG.md`
+(result), and the per-task commit history on the `web-revision-v1` branch.
+
+### Decisions I made
+
+*(Reword this section in your own words — this is what I'll be asked to
+explain.)*
+
+- **Reused the in-class critique** (`report_web-revision_v1_20260901.md`)
+  instead of regenerating it, then stripped the Netlify/CI config first so the
+  tech-spec wouldn't carry findings about a deploy pipeline we'd removed.
+- **Reviewed and approved the tech-spec** before implementation, including its
+  five judgment calls: leaving a build step / templating system out of scope
+  (it contradicts the site's no-build-step design), assuming `theailab.net` as
+  the canonical URL, the direction of each de-duplication, using the longer
+  week-title wording, and not rewriting any policy text.
+- **Weights table:** chose to group it into *Ongoing / Mini-Projects / Final
+  Project* rather than force one strict date-ordered list, because the two
+  assignment tracks run in parallel (the Final Project proposal is genuinely
+  due before Mini-Project 4).
+- **"What is Mini-Project 1?"** The assignment email calls this exercise
+  Mini-Project 1, but the site says Mini-Project 1 is Development Environment
+  Configuration. I left the site as-is and logged the contradiction in
+  `docs/open-questions-for-instructor_20260903.md` rather than rewrite the
+  assignment based on one ambiguous sentence.
+- **Home page:** added an Office Hours row to the Course Details table (value
+  taken from the syllabus); did **not** add an email row because no instructor
+  address is published anywhere on the site and I wasn't going to invent one.
+- **Reviewed the rendered site** page by page in Chrome before finalizing, then
+  merged to `main` and pushed to my fork.
+
+### What changed
+
+See `CHANGELOG.md`. Test suite went from 25 to 51 checks; run `pytest tests/`.
+
 ## License
 
 See [LICENSE](LICENSE).
